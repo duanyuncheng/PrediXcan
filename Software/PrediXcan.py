@@ -87,8 +87,12 @@ class TranscriptionMatrix:
         self.beta_file = beta_file
         self.gene_file = gene_file
         self.sample_file = sample_file
-        self.complements = {"A":"T","C":"G","G":"C","T":"A"}
+#        self.complements = {"A":"T","C":"G","G":"C","T":"A"}
 
+    def reverse_complement(self,seq):
+            complement = {"A":"T","C":"G","G":"C","T":"A"}
+            reversedseq = "".join(complement.get(base, base) for base in reversed(seq))
+            return reversedseq
     def get_gene_list(self):
         if self.gene_file:
             return list(sorted([line.strip().split()[-1] for line in open(self.gene_file)]))
@@ -101,7 +105,7 @@ class TranscriptionMatrix:
             self.gene_index = { gene:k for (k, gene) in enumerate(self.gene_list) }
             self.D = np.zeros((len(self.gene_list), len(dosage_row))) # Genes x Cases
         if gene in self.gene_index: #assumes dosage coding 0 to 2
-            if ref_allele == allele or self.complements[ref_allele] == allele: # assumes non-ambiguous SNPs to resolve strand issues:
+            if ref_allele == allele or self.reverse_complement(ref_allele) == allele: # assumes non-ambiguous SNPs to resolve strand issues:
                 self.D[self.gene_index[gene],] += dosage_row * weight
             else:
                 self.D[self.gene_index[gene],] += (2-dosage_row) * weight # Update all cases for that gene
